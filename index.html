@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lista de Compras</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        input,
+        button {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 8px 0;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .remove-btn {
+            margin-left: 10px;
+            color: red;
+            cursor: pointer;
+        }
+
+        .total {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>🛒 Lista de Compras</h1>
+
+    <!-- Campos de entrada -->
+    <input type="text" id="itemName" placeholder="Nome do item">
+    <input type="number" id="itemQty" placeholder="Qtd" min="1">
+    <input type="number" id="itemPrice" placeholder="Preço R$" min="0" step="0.01">
+    <button id="addItemBtn">Adicionar</button>
+
+    <!-- Lista de itens -->
+    <ul id="itemList"></ul>
+
+    <!-- Total geral -->
+    <div class="total" id="totalDisplay">Total: R$ 0.00</div>
+
+    <script>
+        const itemName = document.getElementById('itemName');
+        const itemQty = document.getElementById('itemQty');
+        const itemPrice = document.getElementById('itemPrice');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const itemList = document.getElementById('itemList');
+        const totalDisplay = document.getElementById('totalDisplay');
+
+        // Carrega itens salvos e mostra na tela
+        function loadItems() {
+            const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+            itemList.innerHTML = '';
+            let total = 0;
+
+            items.forEach((item, index) => {
+                const li = document.createElement('li');
+                const subtotal = item.quantidade * item.preco;
+                total += subtotal;
+
+                li.innerHTML = `
+          <strong>${item.nome}</strong> - 
+          Qtd: ${item.quantidade} - 
+          Preço: R$ ${item.preco.toFixed(2)} 
+          (<em>Subtotal: R$ ${subtotal.toFixed(2)}</em>)
+        `;
+
+                const removeBtn = document.createElement('span');
+                removeBtn.textContent = '❌';
+                removeBtn.classList.add('remove-btn');
+                removeBtn.addEventListener('click', () => removeItem(index));
+
+                li.appendChild(removeBtn);
+                itemList.appendChild(li);
+            });
+
+            totalDisplay.textContent = `Total: R$ ${total.toFixed(2)}`;
+        }
+
+        // Adiciona novo item
+        function addItem() {
+            const nome = itemName.value.trim();
+            const quantidade = parseInt(itemQty.value);
+            const preco = parseFloat(itemPrice.value);
+
+            if (!nome || isNaN(quantidade) || isNaN(preco)) {
+                alert('Preencha todos os campos corretamente.');
+                return;
+            }
+
+            const newItem = { nome, quantidade, preco };
+            const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+
+            items.push(newItem);
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+
+            // Limpa os campos
+            itemName.value = '';
+            itemQty.value = '';
+            itemPrice.value = '';
+
+            loadItems();
+        }
+
+        // Remove item por índice
+        function removeItem(index) {
+            const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+            items.splice(index, 1);
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+            loadItems();
+        }
+
+        // Eventos
+        addItemBtn.addEventListener('click', addItem);
+
+        // Enter também adiciona
+        [itemName, itemQty, itemPrice].forEach(input => {
+            input.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+        });
+
+        // Ao carregar a página
+        window.addEventListener('load', loadItems);
+    </script>
+
+</body>
+
+</html>
