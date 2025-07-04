@@ -88,8 +88,8 @@
                 const removeBtn = document.createElement('span');
                 removeBtn.textContent = '❌';
                 removeBtn.classList.add('remove-btn');
-                removeBtn.addEventListener('click', () => removeItem(index));
-
+                removeBtn.addEventListener('click', () => removeItem(index));//remove um item da lista.
+                ////adiciona um evento de clique ao botão,para que algo aconteça quando o usuario clicar nele/
                 li.appendChild(removeBtn);
                 itemList.appendChild(li);
             });
@@ -131,9 +131,10 @@
         }
 
         // Eventos
-        addItemBtn.addEventListener('click', addItem);
+        addItemBtn.addEventListener('click', addItem);//evento adicionar um item a lista com um click
 
         // Enter também adiciona
+        //mas ao click do enter
         [itemName, itemQty, itemPrice].forEach(input => {
             input.addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
@@ -143,7 +144,7 @@
         });
 
         // Ao carregar a página
-        window.addEventListener('load', loadItems);
+        window.addEventListener('load', loadItems);//carrega os itens ja presentes lista
     </script>
 
 </body>
