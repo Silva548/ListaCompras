@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Lista de Compras</title>
     <style>
         body {
@@ -28,17 +28,34 @@
             margin: 8px 0;
             border-bottom: 1px solid #ccc;
             padding-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .item-info {
+            flex-grow: 1;
         }
 
         .remove-btn {
             margin-left: 10px;
             color: red;
             cursor: pointer;
+            font-size: 20px;
+        }
+
+        .qty-btn {
+            padding: 2px 8px;
+            margin: 0 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
         }
 
         .total {
             font-weight: bold;
             margin-top: 15px;
+            font-size: 1.2em;
         }
     </style>
 </head>
@@ -47,16 +64,13 @@
 
     <h1>🛒 Lista de Compras</h1>
 
-    <!-- Campos de entrada -->
-    <input type="text" id="itemName" placeholder="Nome do item">
-    <input type="number" id="itemQty" placeholder="Qtd" min="1">
-    <input type="number" id="itemPrice" placeholder="Preço R$" min="0" step="0.01">
+    <input type="text" id="itemName" placeholder="Nome do item" />
+    <input type="number" id="itemQty" placeholder="Qtd" min="1" />
+    <input type="number" id="itemPrice" placeholder="Preço R$" min="0" step="0.01" />
     <button id="addItemBtn">Adicionar</button>
 
-    <!-- Lista de itens -->
     <ul id="itemList"></ul>
 
-    <!-- Total geral -->
     <div class="total" id="totalDisplay">Total: R$ 0.00</div>
 
     <script>
@@ -67,7 +81,6 @@
         const itemList = document.getElementById('itemList');
         const totalDisplay = document.getElementById('totalDisplay');
 
-        // Carrega itens salvos e mostra na tela
         function loadItems() {
             const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
             itemList.innerHTML = '';
@@ -75,35 +88,40 @@
 
             items.forEach((item, index) => {
                 const li = document.createElement('li');
+
                 const subtotal = item.quantidade * item.preco;
                 total += subtotal;
 
                 li.innerHTML = `
-          <strong>${item.nome}</strong> - 
-          Qtd: ${item.quantidade} - 
-          Preço: R$ ${item.preco.toFixed(2)} 
-          (<em>Subtotal: R$ ${subtotal.toFixed(2)}</em>)
+          <div class="item-info">
+            <strong>${item.nome}</strong> - 
+            Qtd: 
+            <button class="qty-btn" onclick="updateQty(${index}, -1)">−</button>
+            <span id="qty-${index}">${item.quantidade}</span>
+            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button> - 
+            Preço: R$ ${item.preco.toFixed(2)} 
+            (<em>Subtotal: R$ ${subtotal.toFixed(2)}</em>)
+          </div>
         `;
 
                 const removeBtn = document.createElement('span');
                 removeBtn.textContent = '❌';
                 removeBtn.classList.add('remove-btn');
-                removeBtn.addEventListener('click', () => removeItem(index));//remove um item da lista.
-                ////adiciona um evento de clique ao botão,para que algo aconteça quando o usuario clicar nele/
+                removeBtn.addEventListener('click', () => removeItem(index));
                 li.appendChild(removeBtn);
+
                 itemList.appendChild(li);
             });
 
             totalDisplay.textContent = `Total: R$ ${total.toFixed(2)}`;
         }
 
-        // Adiciona novo item
         function addItem() {
             const nome = itemName.value.trim();
             const quantidade = parseInt(itemQty.value);
             const preco = parseFloat(itemPrice.value);
 
-            if (!nome || isNaN(quantidade) || isNaN(preco)) {
+            if (!nome || isNaN(quantidade) || quantidade < 1 || isNaN(preco) || preco < 0) {
                 alert('Preencha todos os campos corretamente.');
                 return;
             }
@@ -114,7 +132,6 @@
             items.push(newItem);
             localStorage.setItem('shoppingList', JSON.stringify(items));
 
-            // Limpa os campos
             itemName.value = '';
             itemQty.value = '';
             itemPrice.value = '';
@@ -122,7 +139,6 @@
             loadItems();
         }
 
-        // Remove item por índice
         function removeItem(index) {
             const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
             items.splice(index, 1);
@@ -130,21 +146,32 @@
             loadItems();
         }
 
-        // Eventos
-        addItemBtn.addEventListener('click', addItem);//evento adicionar um item a lista com um click
+        function updateQty(index, change) {
+            const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
+            const item = items[index];
 
-        // Enter também adiciona
-        //mas ao click do enter
+            item.quantidade += change;
+            if (item.quantidade < 1) item.quantidade = 1;
+
+            localStorage.setItem('shoppingList', JSON.stringify(items));
+            loadItems();
+        }
+
+        addItemBtn.addEventListener('click', addItem);
+
         [itemName, itemQty, itemPrice].forEach(input => {
-            input.addEventListener('keypress', function (e) {
+            input.addEventListener('keypress', e => {
                 if (e.key === 'Enter') {
                     addItem();
                 }
             });
         });
 
-        // Ao carregar a página
-        window.addEventListener('load', loadItems);//carrega os itens ja presentes lista
+        window.addEventListener('load', loadItems);
+
+        // Para permitir as funções updateQty e removeItem no escopo global
+        window.updateQty = updateQty;
+        window.removeItem = removeItem;
     </script>
 
 </body>
