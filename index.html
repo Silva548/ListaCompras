@@ -11,6 +11,9 @@
             padding: 20px;
             max-width: 600px;
             margin: auto;
+            background-color: #fff;
+            color: #000;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         input,
@@ -57,10 +60,59 @@
             margin-top: 15px;
             font-size: 1.2em;
         }
+
+        /* Botão dark mode */
+        #darkModeToggle {
+            cursor: pointer;
+            padding: 8px 12px;
+            margin-bottom: 15px;
+            border: none;
+            background-color: #444;
+            color: white;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        #darkModeToggle:hover {
+            background-color: #222;
+        }
+
+        /* Estilo modo escuro */
+        body.dark {
+            background-color: #121212;
+            color: #eee;
+        }
+
+        body.dark input,
+        body.dark button {
+            background-color: #222;
+            color: #eee;
+            border: 1px solid #555;
+        }
+
+        body.dark li {
+            border-bottom: 1px solid #444;
+        }
+
+        body.dark .remove-btn {
+            color: #ff6666;
+        }
+
+        body.dark #darkModeToggle {
+            background-color: #eee;
+            color: #121212;
+        }
+
+        body.dark #darkModeToggle:hover {
+            background-color: #ccc;
+        }
     </style>
 </head>
 
 <body>
+
+    <button id="darkModeToggle">🌙 Modo Escuro</button>
 
     <h1>🛒 Lista de Compras</h1>
 
@@ -80,6 +132,7 @@
         const addItemBtn = document.getElementById('addItemBtn');
         const itemList = document.getElementById('itemList');
         const totalDisplay = document.getElementById('totalDisplay');
+        const darkModeToggle = document.getElementById('darkModeToggle');
 
         function loadItems() {
             const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
@@ -138,7 +191,7 @@
 
             loadItems();
         }
-            
+
         function removeItem(index) {
             const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
             items.splice(index, 1);
@@ -157,6 +210,30 @@
             loadItems();
         }
 
+        // Função para alternar o tema
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+
+            if (document.body.classList.contains('dark')) {
+                darkModeToggle.textContent = '☀️ Modo Claro';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                darkModeToggle.textContent = '🌙 Modo Escuro';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // Ao carregar a página, aplicar o tema salvo
+        function loadDarkModePreference() {
+            const darkModeSetting = localStorage.getItem('darkMode');
+            if (darkModeSetting === 'enabled') {
+                document.body.classList.add('dark');
+                darkModeToggle.textContent = '☀️ Modo Claro';
+            } else {
+                darkModeToggle.textContent = '🌙 Modo Escuro';
+            }
+        }
+
         addItemBtn.addEventListener('click', addItem);
 
         [itemName, itemQty, itemPrice].forEach(input => {
@@ -167,9 +244,14 @@
             });
         });
 
-        window.addEventListener('load', loadItems);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
 
-        // Para permitir as funções updateQty e removeItem no escopo global
+        window.addEventListener('load', () => {
+            loadItems();
+            loadDarkModePreference();
+        });
+
+        // Permitir funções globais para os botões de quantidade e remover
         window.updateQty = updateQty;
         window.removeItem = removeItem;
     </script>
