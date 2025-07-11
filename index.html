@@ -61,24 +61,37 @@
             font-size: 1.2em;
         }
 
-        /* Botão dark mode */
-        #darkModeToggle {
+        /* Botões de tema */
+        .theme-button {
             cursor: pointer;
             padding: 8px 12px;
+            margin-right: 10px;
             margin-bottom: 15px;
             border: none;
-            background-color: #444;
-            color: white;
             border-radius: 5px;
             font-size: 1em;
             transition: background-color 0.3s;
+        }
+
+        #darkModeToggle {
+            background-color: #444;
+            color: white;
         }
 
         #darkModeToggle:hover {
             background-color: #222;
         }
 
-        /* Estilo modo escuro */
+        #pinkModeToggle {
+            background-color: #ff69b4;
+            color: white;
+        }
+
+        #pinkModeToggle:hover {
+            background-color: #ff1493;
+        }
+
+        /* Tema escuro */
         body.dark {
             background-color: #121212;
             color: #eee;
@@ -107,12 +120,42 @@
         body.dark #darkModeToggle:hover {
             background-color: #ccc;
         }
+
+        body.pink {
+            background-color: #ffe4ec;
+            color: #800040;
+        }
+
+        body.pink input,
+        body.pink button {
+            background-color: #fff0f5;
+            color: #800040;
+            border: 1px solid #cc6699;
+        }
+
+        body.pink li {
+            border-bottom: 1px solid #cc6699;
+        }
+
+        body.pink .remove-btn {
+            color: #cc0033;
+        }
+
+        body.pink #pinkModeToggle {
+            background-color: #fff;
+            color: #cc0066;
+        }
+
+        body.pink #pinkModeToggle:hover {
+            background-color: #fdd;
+        }
     </style>
 </head>
 
 <body>
 
-    <button id="darkModeToggle">🌙 Modo Escuro</button>
+    <button id="darkModeToggle" class="theme-button">🌙 Modo Escuro</button>
+    <button id="pinkModeToggle" class="theme-button">🌸 Tema Rosa</button>
 
     <h1>🛒 Lista de Compras</h1>
 
@@ -122,7 +165,6 @@
     <button id="addItemBtn">Adicionar</button>
 
     <ul id="itemList"></ul>
-
     <div class="total" id="totalDisplay">Total: R$ 0.00</div>
 
     <script>
@@ -133,6 +175,7 @@
         const itemList = document.getElementById('itemList');
         const totalDisplay = document.getElementById('totalDisplay');
         const darkModeToggle = document.getElementById('darkModeToggle');
+        const pinkModeToggle = document.getElementById('pinkModeToggle');
 
         function loadItems() {
             const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
@@ -141,7 +184,6 @@
 
             items.forEach((item, index) => {
                 const li = document.createElement('li');
-
                 const subtotal = item.quantidade * item.preco;
                 total += subtotal;
 
@@ -181,7 +223,6 @@
 
             const newItem = { nome, quantidade, preco };
             const items = JSON.parse(localStorage.getItem('shoppingList')) || [];
-
             items.push(newItem);
             localStorage.setItem('shoppingList', JSON.stringify(items));
 
@@ -210,48 +251,54 @@
             loadItems();
         }
 
-        // Função para alternar o tema
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-
-            if (document.body.classList.contains('dark')) {
-                darkModeToggle.textContent = '☀️ Modo Claro';
-                localStorage.setItem('darkMode', 'enabled');
-            } else {
-                darkModeToggle.textContent = '🌙 Modo Escuro';
-                localStorage.setItem('darkMode', 'disabled');
-            }
-        }
-
-        // Ao carregar a página, aplicar o tema salvo
-        function loadDarkModePreference() {
-            const darkModeSetting = localStorage.getItem('darkMode');
-            if (darkModeSetting === 'enabled') {
+        // Alternar entre temas
+        function applyTheme(theme) {
+            document.body.classList.remove('dark', 'pink');
+            if (theme === 'dark') {
                 document.body.classList.add('dark');
                 darkModeToggle.textContent = '☀️ Modo Claro';
+                pinkModeToggle.textContent = '🌸 Tema Rosa';
+            } else if (theme === 'pink') {
+                document.body.classList.add('pink');
+                darkModeToggle.textContent = '🌙 Modo Escuro';
+                pinkModeToggle.textContent = '🌼 Tema Claro';
             } else {
                 darkModeToggle.textContent = '🌙 Modo Escuro';
+                pinkModeToggle.textContent = '🌸 Tema Rosa';
             }
+            localStorage.setItem('theme', theme);
+        }
+
+
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+            applyTheme(currentTheme);
+        });
+
+        pinkModeToggle.addEventListener('click', () => {
+            const currentTheme = document.body.classList.contains('pink') ? 'light' : 'pink';
+            applyTheme(currentTheme);
+        });
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
         }
 
         addItemBtn.addEventListener('click', addItem);
 
         [itemName, itemQty, itemPrice].forEach(input => {
             input.addEventListener('keypress', e => {
-                if (e.key === 'Enter') {
-                    addItem();
-                }
+                if (e.key === 'Enter') addItem();
             });
         });
 
-        darkModeToggle.addEventListener('click', toggleDarkMode);
-
         window.addEventListener('load', () => {
             loadItems();
-            loadDarkModePreference();
+            loadTheme();
         });
 
-        // Permitir funções globais para os botões de quantidade e remover
+        // Tornar funções acessíveis globalmente
         window.updateQty = updateQty;
         window.removeItem = removeItem;
     </script>
